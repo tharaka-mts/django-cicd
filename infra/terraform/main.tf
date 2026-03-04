@@ -7,6 +7,11 @@ data "aws_subnets" "default" {
     name   = "vpc-id"
     values = [data.aws_vpc.default.id]
   }
+
+  filter {
+    name   = "availability-zone"
+    values = [var.availability_zone]
+  }
 }
 
 data "aws_ami" "amazon_linux" {
@@ -59,13 +64,13 @@ resource "aws_iam_policy" "s3_policy" {
     Version = "2012-10-17",
     Statement = [
       {
-        Effect = "Allow",
-        Action = ["s3:ListBucket"],
+        Effect   = "Allow",
+        Action   = ["s3:ListBucket"],
         Resource = [aws_s3_bucket.uploads.arn]
       },
       {
-        Effect = "Allow",
-        Action = ["s3:GetObject", "s3:PutObject", "s3:DeleteObject"],
+        Effect   = "Allow",
+        Action   = ["s3:GetObject", "s3:PutObject", "s3:DeleteObject"],
         Resource = ["${aws_s3_bucket.uploads.arn}/*"]
       }
     ]
@@ -122,6 +127,7 @@ resource "aws_security_group" "ec2_sg" {
 resource "aws_instance" "app" {
   ami                    = data.aws_ami.amazon_linux.id
   instance_type          = var.instance_type
+  availability_zone      = var.availability_zone
   key_name               = var.key_name
   subnet_id              = data.aws_subnets.default.ids[0]
   vpc_security_group_ids = [aws_security_group.ec2_sg.id]

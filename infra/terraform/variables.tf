@@ -26,6 +26,12 @@ variable "instance_type" {
   default     = "t3.micro"
 }
 
+variable "availability_zone" {
+  description = "Availability Zone for EC2 and subnet selection"
+  type        = string
+  default     = "us-east-1a"
+}
+
 variable "bucket_name_prefix" {
   description = "Globally unique prefix for S3 bucket naming"
   type        = string
