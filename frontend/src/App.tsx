@@ -1,7 +1,7 @@
 import { FormEvent, useEffect, useState } from 'react'
 import { AxiosError } from 'axios'
 import { createNote, deleteNote, listNotes, updateNote } from './api/notes'
-import { listUploads, uploadFile } from './api/upload'
+import { deleteUpload, listUploads, uploadFile } from './api/upload'
 import type { ApiError, Note, UploadedFileItem, UploadResponse } from './types'
 import AlertBanner from './components/AlertBanner'
 import CreateNoteForm from './components/CreateNoteForm'
@@ -37,6 +37,7 @@ export default function App() {
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [uploading, setUploading] = useState(false)
+  const [deletingUploadId, setDeletingUploadId] = useState<number | null>(null)
   const [uploadResult, setUploadResult] = useState<UploadResponse | null>(null)
   const [uploads, setUploads] = useState<UploadedFileItem[]>([])
 
@@ -174,6 +175,22 @@ export default function App() {
     }
   }
 
+  const handleDeleteUpload = async (id: number) => {
+    if (deletingUploadId !== null) return
+
+    clearMessages()
+    setDeletingUploadId(id)
+    try {
+      await deleteUpload(id)
+      setUploads((prev) => prev.filter((item) => item.id !== id))
+      setSuccessMessage('Uploaded file deleted.')
+    } catch (error) {
+      setErrorMessage(getErrorMessage(error, 'Failed to delete uploaded file.'))
+    } finally {
+      setDeletingUploadId(null)
+    }
+  }
+
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_20%_20%,#dbeafe_0%,#f8fafc_45%),radial-gradient(circle_at_80%_0%,#fef3c7_0%,transparent_35%)] px-4 py-8 sm:px-6">
       <div className="mx-auto max-w-6xl">
@@ -200,6 +217,8 @@ export default function App() {
               uploading={uploading}
               uploadResult={uploadResult}
               uploads={uploads}
+              deletingUploadId={deletingUploadId}
+              onDeleteUpload={(id) => void handleDeleteUpload(id)}
             />
           </div>
 

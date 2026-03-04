@@ -7,6 +7,8 @@ type UploadCardProps = {
   uploading: boolean
   uploadResult: UploadResponse | null
   uploads: UploadedFileItem[]
+  deletingUploadId: number | null
+  onDeleteUpload: (id: number) => void
 }
 
 function isImageUrl(value: string): boolean {
@@ -20,6 +22,8 @@ export default function UploadCard({
   uploading,
   uploadResult,
   uploads,
+  deletingUploadId,
+  onDeleteUpload,
 }: UploadCardProps) {
   const showImagePreview = uploadResult
     ? isImageUrl(uploadResult.key) || isImageUrl(uploadResult.presigned_url)
@@ -90,6 +94,16 @@ export default function UploadCard({
                     Open Link
                   </a>
                   <p className="text-xs text-slate-500">Link may expire.</p>
+                  <div className="mt-2 flex justify-end">
+                    <button
+                      type="button"
+                      onClick={() => onDeleteUpload(item.id)}
+                      disabled={deletingUploadId === item.id}
+                      className="rounded-full bg-rose-600 px-3 py-1 text-xs font-medium text-white disabled:opacity-60"
+                    >
+                      {deletingUploadId === item.id ? 'Deleting...' : 'Delete'}
+                    </button>
+                  </div>
                 </li>
               )
             })}

@@ -16,3 +16,7 @@ export async function listUploads(): Promise<UploadedFileItem[]> {
   const { data } = await http.get<UploadedFileItem[]>('/api/uploads/')
   return data
 }
+
+export async function deleteUpload(id: number): Promise<void> {
+  await http.delete(`/api/uploads/${id}/`)
+}

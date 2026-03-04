@@ -69,3 +69,16 @@ class UploadedFileListView(APIView):
             response_payload.append(serialized)
 
         return Response(response_payload, status=status.HTTP_200_OK)
+
+
+class UploadedFileDetailView(APIView):
+    def delete(self, request, upload_id, *args, **kwargs):
+        upload = UploadedFile.objects.filter(id=upload_id).first()
+        if not upload:
+            return Response({"detail": "Upload not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        s3_client = boto3.client("s3", region_name=settings.AWS_REGION)
+        s3_client.delete_object(Bucket=upload.bucket, Key=upload.key)
+        upload.delete()
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
