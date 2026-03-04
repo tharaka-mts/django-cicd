@@ -1,4 +1,4 @@
-import type { UploadResponse } from '../types'
+import type { UploadedFileItem, UploadResponse } from '../types'
 
 type UploadCardProps = {
   selectedFile: File | null
@@ -6,13 +6,21 @@ type UploadCardProps = {
   onUpload: () => void
   uploading: boolean
   uploadResult: UploadResponse | null
+  uploads: UploadedFileItem[]
 }
 
 function isImageUrl(value: string): boolean {
   return /\.(png|jpe?g|gif|webp)(\?.*)?$/i.test(value)
 }
 
-export default function UploadCard({ selectedFile, onFileChange, onUpload, uploading, uploadResult }: UploadCardProps) {
+export default function UploadCard({
+  selectedFile,
+  onFileChange,
+  onUpload,
+  uploading,
+  uploadResult,
+  uploads,
+}: UploadCardProps) {
   const showImagePreview = uploadResult
     ? isImageUrl(uploadResult.key) || isImageUrl(uploadResult.presigned_url)
     : false
@@ -54,6 +62,38 @@ export default function UploadCard({ selectedFile, onFileChange, onUpload, uploa
               className="mt-3 max-h-64 w-full rounded border object-contain"
             />
           )}
+        </div>
+      )}
+
+      {uploads.length > 0 && (
+        <div className="mt-4">
+          <h3 className="mb-2 text-sm font-semibold text-slate-700">Uploaded Files</h3>
+          <ul className="space-y-2">
+            {uploads.map((item) => {
+              const showItemPreview =
+                isImageUrl(item.key) || isImageUrl(item.presigned_url)
+
+              return (
+                <li key={item.id} className="rounded-lg border bg-slate-50 p-3 text-sm">
+                  {showItemPreview && (
+                    <img
+                      src={item.presigned_url}
+                      alt={item.key}
+                      className="mb-2 max-h-40 w-full rounded border object-contain"
+                    />
+                  )}
+                  <p className="break-all">
+                    <strong>Key:</strong> {item.key}
+                  </p>
+                  <p className="text-xs text-slate-500">{new Date(item.created_at).toLocaleString()}</p>
+                  <a href={item.presigned_url} target="_blank" rel="noreferrer" className="text-blue-700 underline">
+                    Open Link
+                  </a>
+                  <p className="text-xs text-slate-500">Link may expire.</p>
+                </li>
+              )
+            })}
+          </ul>
         </div>
       )}
     </section>

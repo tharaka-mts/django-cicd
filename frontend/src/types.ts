@@ -11,6 +11,14 @@ export type UploadResponse = {
   presigned_url: string
 }
 
+export type UploadedFileItem = {
+  id: number
+  key: string
+  bucket: string
+  created_at: string
+  presigned_url: string
+}
+
 export type ApiError = {
   detail?: string
   [key: string]: unknown

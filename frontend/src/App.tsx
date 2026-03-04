@@ -1,8 +1,8 @@
 import { FormEvent, useEffect, useState } from 'react'
 import { AxiosError } from 'axios'
 import { createNote, deleteNote, listNotes, updateNote } from './api/notes'
-import { uploadFile } from './api/upload'
-import type { ApiError, Note, UploadResponse } from './types'
+import { listUploads, uploadFile } from './api/upload'
+import type { ApiError, Note, UploadedFileItem, UploadResponse } from './types'
 import AlertBanner from './components/AlertBanner'
 import CreateNoteForm from './components/CreateNoteForm'
 import NotesList from './components/NotesList'
@@ -38,6 +38,7 @@ export default function App() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [uploading, setUploading] = useState(false)
   const [uploadResult, setUploadResult] = useState<UploadResponse | null>(null)
+  const [uploads, setUploads] = useState<UploadedFileItem[]>([])
 
   const [errorMessage, setErrorMessage] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
@@ -62,8 +63,22 @@ export default function App() {
     }
   }
 
+  const fetchUploads = async () => {
+    try {
+      const data = await listUploads()
+      setUploads(data)
+      return true
+    } catch (error) {
+      setErrorMessage(getErrorMessage(error, 'Failed to load uploaded files.'))
+      return false
+    }
+  }
+
   useEffect(() => {
-    void fetchNotes({ withSpinner: true })
+    void (async () => {
+      await fetchNotes({ withSpinner: true })
+      await fetchUploads()
+    })()
   }, [])
 
   const reloadAfterMutation = async () => {
@@ -150,6 +165,7 @@ export default function App() {
     try {
       const result = await uploadFile(selectedFile)
       setUploadResult(result)
+      await fetchUploads()
       setSuccessMessage('Upload successful.')
     } catch (error) {
       setErrorMessage(getErrorMessage(error, 'Upload failed.'))
@@ -183,6 +199,7 @@ export default function App() {
               onUpload={() => void handleUpload()}
               uploading={uploading}
               uploadResult={uploadResult}
+              uploads={uploads}
             />
           </div>
 

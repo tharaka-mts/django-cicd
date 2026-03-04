@@ -1,5 +1,5 @@
 import http from './http'
-import type { UploadResponse } from '../types'
+import type { UploadedFileItem, UploadResponse } from '../types'
 
 export async function uploadFile(file: File): Promise<UploadResponse> {
   const formData = new FormData()
@@ -9,5 +9,10 @@ export async function uploadFile(file: File): Promise<UploadResponse> {
     headers: { 'Content-Type': 'multipart/form-data' },
   })
 
+  return data
+}
+
+export async function listUploads(): Promise<UploadedFileItem[]> {
+  const { data } = await http.get<UploadedFileItem[]>('/api/uploads/')
   return data
 }
