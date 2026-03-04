@@ -1,0 +1,11 @@
+FROM node:22-alpine AS frontend-builder
+
+WORKDIR /frontend
+COPY frontend .
+RUN corepack enable && yarn install
+RUN yarn build
+
+FROM nginx:1.27-alpine
+
+COPY --from=frontend-builder /frontend/dist /usr/share/nginx/html
+COPY nginx/conf.d/default.prod.conf.template /etc/nginx/templates/default.conf.template

@@ -1,0 +1,13 @@
+flowchart LR
+    U[User Browser] -->|HTTPS 443| N[Nginx Container on EC2]
+    N -->|/| F[React Static Build]
+    N -->|/api/*| B[Django DRF + Gunicorn]
+    B -->|PostgreSQL 5432| D[(Postgres Container)]
+    B -->|Put/Get Object via IAM Role| S[(Private S3 Bucket)]
+
+    subgraph AWS EC2 Instance
+      N
+      B
+      D
+      F
+    end
