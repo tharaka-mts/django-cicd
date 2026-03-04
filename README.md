@@ -17,6 +17,8 @@ Minimal full-stack Notes CRUD app with production-focused infrastructure and dep
 - `PUT/PATCH /api/notes/{id}/`
 - `DELETE /api/notes/{id}/`
 - `POST /api/upload/` (multipart field: `file`)
+- `GET /api/uploads/` (list recent uploaded files with fresh presigned URL)
+- `DELETE /api/uploads/{id}/` (delete file from S3 + app record)
 
 Upload response:
 - `key`
@@ -34,11 +36,6 @@ cp .env.example .env
 docker compose up --build
 ```
 4. Open `http://localhost`
-
-Frontend now uses a minimal deterministic data flow:
-- no client query caching library
-- create/update/delete always refetch the notes list from backend
-- simpler behavior for local debugging and deployment demos
 
 ## Production Compose on EC2
 ### 1) Provision infra with Terraform
@@ -71,6 +68,7 @@ Update `.env.prod`:
 - `DJANGO_CORS_ALLOWED_ORIGINS=https://<your-subdomain>.duckdns.org`
 - `AWS_S3_BUCKET=<terraform bucket output>`
 - `DOMAIN_NAME=<your-subdomain>.duckdns.org`
+- Optional (if not using IAM role): `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`
 
 ### 3) DuckDNS
 - Create/update DuckDNS subdomain.
@@ -88,13 +86,12 @@ docker compose -f docker-compose.prod.yml up -d --build
 ```
 Request certificate:
 ```bash
-docker run --rm \
-  -v $(pwd)/certbot/www:/var/www/certbot \
+  docker run --rm -p 80:80 \
   -v $(pwd)/certbot/conf:/etc/letsencrypt \
-  certbot/certbot certonly --webroot \
-  -w /var/www/certbot \
+  certbot/certbot certonly --standalone \
   -d <your-subdomain>.duckdns.org \
   --email <your-email> --agree-tos --no-eff-email
+
 ```
 Restart nginx:
 ```bash
@@ -129,6 +126,7 @@ Outbound:
 - PostgreSQL is internal-only; no public port mapping.
 - Secrets are env-based; do not commit `.env*` (except `.env.example`).
 - S3 bucket blocks all public access.
+- Nginx upload limit is `10MB` (`client_max_body_size 10M`).
 
 ## Backups
 MVP:

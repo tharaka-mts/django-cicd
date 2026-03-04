@@ -55,6 +55,8 @@ Note fields:
 
 ### Upload
 - POST /api/upload/ (multipart/form-data, file field name: "file")
+- GET /api/uploads/ (recent uploaded files with fresh presigned URLs)
+- DELETE /api/uploads/{id}/ (delete S3 object + app record)
 Behavior:
 - Upload file to S3 path: `${AWS_S3_PREFIX}${uuid}_${original_filename}`
 - Return:
@@ -84,7 +86,7 @@ Frontend env vars:
 
 Frontend state management:
 - Keep UI state in plain React hooks (`useState`, `useEffect`)
-- After create/update/delete, call backend and then refetch notes list
+- After create/update/delete, update local state from API response and re-sync list
 - No extra client-side query caching library
 
 ### What must NOT be committed
@@ -120,6 +122,7 @@ Only nginx exposes ports.
 - SPA fallback to `/index.html`
 - add basic security headers
 - gzip enabled
+- upload body size limit: `10MB`
 - SSL termination in production (certbot on host; nginx uses mounted certs)
 
 ---
